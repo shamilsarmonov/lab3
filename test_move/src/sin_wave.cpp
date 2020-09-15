@@ -1,0 +1,49 @@
+#include "ros/ros.h"
+#include "std_msgs/Float64.h"
+
+//for sin()
+#include <math.h>
+
+float X;
+
+void joint4angleCallback(const std_msgs::Float64 msg)
+{
+    X = msg.data;
+
+    ROS_INFO("X: %f", X);
+    //ROS_INFO(" ");
+ 
+
+}
+
+
+
+int main(int argc, char **argv) {
+    ros::init(argc, argv, "rotate");
+    X = 0;
+    ros::NodeHandle nh;
+
+    ros::Publisher pub3 = nh.advertise<std_msgs::Float64>("/robot/joint1_position_controller/command", 100);
+    ros::Publisher pub4 = nh.advertise<std_msgs::Float64>("/robot/joint5_position_controller/command", 100);
+    ros::Subscriber sub = nh.subscribe("sin_wave", 1000, joint4angleCallback);
+
+    ros:: Rate loop_rate(10);
+
+    ros::Time startTime = ros::Time::now();
+
+        while (ros::ok()) {
+            std_msgs::Float64 msg_to_send;
+
+            
+            msg_to_send.data = sin(X);
+            X = X + 0.1;
+            pub3.publish(msg_to_send);
+            pub4.publish(msg_to_send);
+
+            ROS_INFO("sin(X): %f", sin(X));
+
+            ros::spinOnce();
+
+            loop_rate.sleep();
+        }
+}
